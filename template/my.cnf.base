@@ -1,0 +1,224 @@
+# *****************************************************************************
+# Name:      my.cnf.base
+# Purpose:   Base MySql installation configuration.  This file is set up to be
+#            dynamically configured by the install_mysql.sh script.  
+#
+#            DO NOT ALTER THIS FILE IN ANY WAY UNLESS YOU KNOW PRECISELY WHAT
+#            YOU ARE DOING IN RELATION TO MYSQL TUNING AND INTERACTION WITH 
+#            THE INSTALLATION SCRIPT
+#
+# Notes:     This script must be run as root
+#            Identifiers in this file are of the form <IDENTIFIER_NAME>
+#            Identifiers set dynamically are prefixed with D_ 
+#            (e.g. <D_IDENTIFIER_NAME>
+# Change Log
+# Date           Name           Description
+# *****************************************************************************
+# 01/26/2011     BEH            File Creation
+# *****************************************************************************
+
+# **********************************************************************
+# Establish parameters that will be passed to MySQL client programs.
+# **********************************************************************
+[client]
+port                            = <PORT>                               # Port for client connections to this MySQL instance.
+socket                          = /tmp/mysql.sock             # file
+
+[mysqldump]
+quick
+max_allowed_packet              = <D_MAX_ALLOWED_PACKET>
+
+[mysql]
+skip_auto_rehash             
+
+# **********************************************************************
+# Establish parameters that will configure the MySQL server daemon
+# when it is started.
+# **********************************************************************
+
+[mysqld]
+# **********************************************************************
+# GENERAL SETTINGS
+# **********************************************************************
+basedir                         = <D_MYSQL_HOME>
+user                            = mysql
+port                            = <PORT>
+pid_file                        = <ADMIN_PATH>/mysqld.pid             # file
+socket                          = /tmp/mysql.sock             # file
+
+# Allow/disallow the importing of data from a client ("local") machine using the LOAD DATA command.
+local_infile                    = OFF                                   # ON or OFF (OFF disallows)
+
+# Disallow the use of passwords in the old format.
+secure_auth                     
+
+# Do not resolve host names when checking client connections. Use only IP addresses.
+#skip_name_resolve             
+
+# auto_increment_offset         = 2
+# auto_increment_increment      = 2
+
+# Location of all table data and indexes for this server (assuming innodb_file_per_table).
+datadir                      = <DATA_PATH>                             # directory
+
+# Location of all temporary files for ORDER BY, GROUP BY and other operations.
+tmpdir                          = <TMP_PATH>                           # directory
+
+# When not specified, character set settings degrade gracefully.  For instance
+# if the server is utf8 and a new database is created without the charset 
+# specified, then utf8 is what will be used.  We want to insure consistency
+# across all levels and expect any client to send and recieve utf8
+character_set_server            = utf8
+character_set_client            = utf8
+
+# Collation (i.e. sorting) defaults
+collation_server                = utf8_unicode_ci
+
+connect_timeout                 = 15                                    # seconds
+interactive_timeout             = 600                                   # seconds
+wait_timeout                    = 600                                   # seconds
+max_connect_errors              = 10000
+
+# Establish how many connection requests can be stacked before MySQL
+# momentarily stops answering new requests.
+back_log                     = 100
+
+open_files_limit             = 65535
+
+# Set the maximum size of a result set to store in the query_cache.
+query_cache_limit            = 2M
+
+# **********************************************************************
+# LOG FILE SETTINGS
+# **********************************************************************
+# Enable binary logging and set the path.  This allows for replication and
+# rolling forward for recovery.
+log_bin                      = <LOG_BIN>/<HOST>_binary                        # file template
+binlog_format                = ROW                                      # Set this way for performance reasons
+
+log_bin_index                = <LOG_BIN>/<HOST>_binary.index                  # file
+max_binlog_size              = 128M                                     # Maximum size of a binary log file before starting the next one.
+expire_logs_days             = <D_EXPIRE_LOGS_DAYS>                    # How many days to keep binary log files.
+
+# Establish the method by which the binary log is written (synced) to disk.
+# Any setting greater than 0 causes MySQL to synchronize the binary log to 
+# disk after every sync_binlog writes to the binary log.
+# 0 is the default, which makes MySQL rely on the OS to do periodic syncs.
+# 1 is the safest (but potentially slowest) setting.  It should be used for master servers only.
+sync_binlog                  = 0
+
+# Enable the error log and set the path.  This log contains info on when MySQL is
+# started/stopped and when any critical errors are encountered.
+log_error                    = <ADMIN_PATH>/<HOST>_error.log          # file
+
+# Enable the slow query log and set the path.  This log contains info about
+# queries that take more than long_query_time seconds to execute.
+slow_query_log                                                          # Comment out to disable.
+slow_query_log_file          = <ADMIN_PATH>/<HOST>_slow_query.log     # file
+
+# Establish the threshold for determining whether a query is slow.  If a query takes more than
+# this number of seconds to execute, then the query is logged in the slow_query_log_file.
+long_query_time              = <D_LONG_QUERY_TIME>                     # seconds
+
+# Enable the general log and set the path.  This log records *all* SQL activity from each client
+# which usually results in a lot of log entries very quickly.  Therefore, it should ONLY be
+# used on development systems and the results should be monitored closely.
+# general_log                                                           # Comment out to disable.
+general_log_file             = <ADMIN_PATH>/<HOST>_general.log        # file
+
+# **********************************************************************
+# GLOBAL MEMORY SETTINGS
+# **********************************************************************
+max_connections              = <D_MAX_CONNECTIONS>                     # The maximum number of concurrent user connections to the server.
+table_open_cache             = <D_TABLE_OPEN_CACHE>
+table_definition_cache       = <D_TABLE_DEFINITION_CACHE>
+
+# Number of threads kept cached for reuse.  Threads are taken from the cache
+# upon request before they are created.  Threads released by a client are first
+# placed in the cache up to the maximum number specified here.
+thread_cache_size            = <D_THREAD_CACHE_SIZE>
+
+query_cache_size             = 32M
+
+# **********************************************************************
+# INNODB SETTINGS
+# **********************************************************************
+innodb                       = ON                                       # ON or OFF
+default_storage_engine       = InnoDB                                   # Usually InnoDB or MyISAM.
+
+innodb_data_home_dir         = <INNODB_PATH>                           # directory (InnoDB tablespace files only)
+innodb_data_file_path        = <D_INNODB_DATA_FILE_PATH>
+innodb_autoextend_increment  = <D_INNODB_AUTOEXTEND_INCREMENT>         # Mbytes
+innodb_file_per_table        = TRUE                                     # TRUE causes each InnoDB table to have its own file, which is preferable.
+innodb_thread_concurrency    = <D_INNODB_THREAD_CONCURRENCY>
+
+innodb_log_group_home_dir    = <INNODB_PATH>                           # directory
+innodb_log_file_size         = <D_INNODB_LOG_FILE_SIZE>                # Should be roughly half the size of innodb_buffer_pool_size.
+innodb_log_buffer_size       = 8M
+
+# Global InnoDB memory settings
+# innodb_buffer_pool_size can be from 50% to 80% of system memory,
+# but setting it too high will cause paging.
+innodb_buffer_pool_size      = <D_INNODB_BUFFER_POOL_SIZE>
+
+# **********************************************************************
+# MYISAM SETTINGS
+# **********************************************************************
+# Global MyISAM memory settings
+key_buffer_size              = <D_KEY_BUFFER_SIZE>
+
+# **********************************************************************
+# SESSION (THREAD) MEMORY SETTINGS
+# **********************************************************************
+max_allowed_packet           = <D_MAX_ALLOWED_PACKET>                  # Allow large bulk inserts.
+group_concat_max_len         = <D_GROUP_CONCAT_MAX_LEN>             
+join_buffer_size             = <D_JOIN_BUFFER_SIZE>
+
+# myisam_sort_buffer_size is allocated when sorting the index while doing
+# a REPAIR or when creating indexes with CREATE INDEX or ALTER TABLE.
+# Although a session variable, not many people use this, so the value
+# can usually be set high relative to the amount of system memory.
+# Note that this is NOT a MyISAM specific setting.  MySQL uses MyISAM
+# to write out such operations as the above to disk regardless of the
+# storage engine of the table.
+myisam_sort_buffer_size      = <D_MYISAM_SORT_BUFFER_SIZE>
+
+# sort_buffer_size is allocated to each process
+# performing a GROUP BY or ORDER BY.
+sort_buffer_size             = <D_SORT_BUFFER_SIZE>
+
+# read_buffer_size is allocated to each process for each table
+# that has to be sequentially scanned.
+read_buffer_size             = <D_READ_BUFFER_SIZE>
+read_rnd_buffer_size         = <D_READ_RND_BUFFER_SIZE>
+
+# tmp_table_size is the lesser of tmp_table_size and max_heap_table_size.
+# The values should be identical.
+tmp_table_size               = <D_TMP_TABLE_SIZE>
+max_heap_table_size          = <D_TMP_TABLE_SIZE>
+
+# **********************************************************************
+# REPLICATION SETTINGS
+# **********************************************************************
+# Include the replication server information file.
+# These settings are always specific to each server and can be generated using
+# system data which is external to the database and database config files.
+# The included file is generated every time the machine is booted.
+!include /db/mysql/admin/rep_server_info.cnf
+
+# Settings as master
+# NONE
+
+# Settings as slave
+# skip_slave_start                                                     # Comment out to allow the slave to operate.
+# read_only                                                            # Comment out to allow writes to this server.
+
+master_info_file             = <ADMIN_PATH>/<HOST>_master.info        # file
+relay_log                    = <RELAY_LOG_PATH>/<HOST>_relay_log      # file template
+relay_log_index              = <RELAY_LOG_PATH>/<HOST>_relay_log.index    # file
+relay_log_info_file          = <ADMIN_PATH>/<HOST>_relay_log.info         # file
+slave_net_timeout            = 300                                      # seconds
+
+# log_slave_updates must be enabled to allow the daisy-chaining of master servers.
+# log_slave_updates                                                       # Comment out if this server will not be a master.
+

@@ -1,0 +1,5 @@
+PS1='$PWD: '                
+MYSQL_BASE=<D_MYSQL_BASE>       
+MYSQL_HOME=<D_MYSQL_HOME>
+export MYSQL_BASE MYSQL_HOME
+PATH=$MYSQL_HOME/bin:$PATH  
