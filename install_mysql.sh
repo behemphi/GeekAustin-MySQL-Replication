@@ -207,7 +207,7 @@ tablespce), stop the server and start it again
 Secure instance - as root
 +++++
 > mysql mysql
-% grant all on *.* to 'dba'@'localhost' identifed by 'geek';
+% grant all on *.* to 'dba'@'localhost' identified by 'geek';
 % delete from user where user = 'root';
 % delete from user where user = '';
 % flush privileges;
